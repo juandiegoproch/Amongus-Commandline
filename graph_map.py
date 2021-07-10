@@ -55,7 +55,7 @@ def graph_map(gamemap):
             if gamemap[whereIminMap[0]][whereIminMap[1]] == 255:
                 screen += "██"
             elif gamemap[whereIminMap[0]][whereIminMap[1]] == 0:
-                screen += ".."
+                screen += " ."
             else:
                 screen+= f"{gamemap[whereIminMap[0]][whereIminMap[1]]:02d}"
         screen += "\n"
@@ -78,7 +78,7 @@ def generate_map(gamemap,areas,sizeof_areas=(15,25)):
     while not mapGeneratedSuccesfully:
         # Make 100 attempts to generate more rooms
         tempmap = [i.copy() for i in gamemap]
-        roompos = []
+        rooms = []
         roomsgenerated = 0
         for i in range(100):
             # Generate candidate room
@@ -90,7 +90,8 @@ def generate_map(gamemap,areas,sizeof_areas=(15,25)):
             # Check if viable:
             if room_fits(x,y,w,l,sizeof_areas,tempmap):
                 roomsgenerated += 1
-                roompos.append((x,y,w,l))
+                # Log the rooms that are produced
+                rooms.append((x,y,w,l,roomsgenerated))
                 fill_room(x,y,w,l,tempmap)
 
             # Check if finished
@@ -99,47 +100,41 @@ def generate_map(gamemap,areas,sizeof_areas=(15,25)):
                 break
 
     gamemap = [i.copy() for i in tempmap]
-    graph_map(gamemap)
 
-    
     # Part 2: Generate the walls:
     for y in range(1,mapl - 1):
         for x in range(1,mapw - 1):
             # if all adjacent blocks are member of room:
             if tempmap[y-1][x] and tempmap[y+1][x] and tempmap[y][x+1] and tempmap[y][x-1]:
                 gamemap[y][x] = 0
-    graph_map(gamemap)
+
     # Part 3: Generate doors
-    print(rooms)
     for room in rooms:
+
         # 1 is top, 2 is left, 3 is bottom, 4 is right
         doorside = random.randint(1,4)
-        print(doorside)
         if doorside == 1:
             # Top
-            shift = random.randin(1,room[2]-1)
+            shift = random.randint(1,room[2]-1)
             pos = (room[0] + shift, room[1])
-            gamemap[pos[0]][pos[1]] = 0
-            print(pos)
+            gamemap[pos[1]][pos[0]] = room[4]
         elif doorside == 2:
             # Left
-            shift = random.randin(1,room[3]-1)
+            shift = random.randint(1,room[3]-1)
             pos = (room[0], room[1] + shift)
-            gamemap[pos[0]][pos[1]] = 0
-            print(pos)
+            gamemap[pos[1]][pos[0]] = room[4]
         elif doorside == 3:
             # Bottom
-            shift = random.randin(1,room[2]-1)
+            shift = random.randint(1,room[2]-1)
             pos = (room[0]+room[2]-shift,room[1]+room[3])
-            gamemap[pos[0]][pos[1]] = 0
-            print(pos)
+            gamemap[pos[1]][pos[0]] = room[4]
         elif doorside == 4:
             # Right
-            shift = random.randin(1,room[3]-1)
+            shift = random.randint(1,room[3]-1)
             pos = (room[0]+room[2],room[1]+room[3]-shift)
-            gamemap[pos[0]][pos[1]] = 0
-            print(pos)
-    graph_map(gamemap)
+            gamemap[pos[1]][pos[0]] = room[4]
+
+    return gamemap
     
             
-generate_map(scenario,5)
+graph_map(generate_map(scenario,5))
